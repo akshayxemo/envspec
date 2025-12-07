@@ -1,0 +1,15 @@
+# Ignore compiled output
+/build/
+/dist/
+
+# Ignore dependency directories
+node_modules/
+.venv/
+
+# Ignore log files
+*.log
+
+# Ignore specific files
+.DS_Store
+.env
+example/

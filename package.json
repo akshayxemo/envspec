@@ -1,0 +1,27 @@
+{
+  "name": "envspec",
+  "version": "0.1.0",
+  "description": "It is a schema-driven environment variable workflow tool designed to prevent runtime bugs and configuration drift.",
+  "type": "module",
+  "bin": {
+    "envspec": "./bin/envspec.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "env",
+    "environment",
+    "dotenv",
+    "cli",
+    "devtool",
+    "configuration",
+    "schema"
+  ],
+  "author": "Akshay Kumar Das",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^14.0.2",
+    "dotenv": "^17.2.3"
+  }
+}
