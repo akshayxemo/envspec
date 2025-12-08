@@ -3,6 +3,7 @@ import path from "path";
 import dotenv from "dotenv";
 import { generateStringExample, inferPrimitiveArrayType, isSafeNumber } from "../utils/helper.js";
 import { fail } from "../utils/error.js";
+import { logger } from "../utils/logger.js";
 
 const SCHEMA_FILE = "envspec.json";
 
@@ -12,7 +13,7 @@ export function initCommand(options) {
     const schemaPath = path.join(cwd, SCHEMA_FILE);
 
     if (fs.existsSync(schemaPath)) {
-      console.error("[Error]: envspec.json already exists");
+      logger.error("[Error]: envspec.json already exists");
       return;
     }
 
@@ -29,21 +30,21 @@ export function initCommand(options) {
       const envPath = path.join(cwd, ".env");
 
       if (!fs.existsSync(envPath)) {
-        console.error("[Error]: .env file not found");
+        logger.error("[Error]: .env file not found");
         return;
       }
 
       const parsed = dotenv.config({ path: envPath }).parsed;
 
       if (!parsed) {
-        console.error("[Error]: Failed to read .env file");
+        logger.error("[Error]: Failed to read .env file");
         return;
       }
 
       for (const [key, value] of Object.entries(parsed)) {
-        // console.log("value:", value, typeof value)
+        // logger.log("value:", value, typeof value)
         if (value == null || value == undefined || value === "") {
-          console.log(`[Error]: Invalid value found in .env: ${key}`);
+          logger.log(`[Error]: Invalid value found in .env: ${key}`);
           return;
         }
         schema.vars[key] = inferSchema(key, value, markRequired);
@@ -51,7 +52,7 @@ export function initCommand(options) {
     }
 
     fs.writeFileSync(schemaPath, JSON.stringify(schema, null, 2));
-    console.log("✔ envspec initialized");
+    logger.success("✔ envspec initialized");
   } catch (err) {
     fail("Failed to initialize envspec.json to the project", err);
   }

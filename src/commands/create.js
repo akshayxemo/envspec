@@ -4,6 +4,7 @@ import { generateStringExample, isValidType } from "../utils/helper.js";
 import { confirm } from "../utils/prompts.js";
 import { readEnvSafe, writeEnvFile } from "../utils/readWriteEnv.js";
 import { fail } from "../utils/error.js";
+import { logger } from "../utils/logger.js";
 
 const SCHEMA_FILE = "envspec.json";
 
@@ -17,7 +18,7 @@ export async function createCommand(options) {
     const envPath = path.join(cwd, options.output || ".env");
 
     if (!fs.existsSync(schemaPath)) {
-      console.error(
+      logger.error(
         "[Error]: envspec.json not found. Run `envspec init` first."
       );
       return;
@@ -30,7 +31,7 @@ export async function createCommand(options) {
       typeof schema.vars !== "object" ||
       Array.isArray(schema.vars)
     ) {
-      console.error("[Error]: Invalid schema structure");
+      logger.error("[Error]: Invalid schema structure");
       return;
     }
 
@@ -43,7 +44,7 @@ export async function createCommand(options) {
         "⚠ This will overwrite your existing .env file.\nA backup will be created.\nContinue?"
       );
       if (!ok) {
-        console.log("Aborted.");
+        logger.log("Aborted.");
         return;
       }
     }
@@ -61,16 +62,16 @@ export async function createCommand(options) {
     printSummary(changes, !!existingEnv);
 
     if (options.dryRun) {
-      console.log("\n--dry-run enabled. No file written.");
+      logger.log("\n--dry-run enabled. No file written.");
       return;
     }
 
     writeEnvFile(envPath, result);
 
-    console.log("✔ .env generated safely");
+    logger.success("✔ .env generated safely");
 
     if (Object.values(schemaVars).some((v) => v.type === "object")) {
-      console.log("ℹ Object values are stored as JSON strings in .env");
+      logger.info("ℹ Object values are stored as JSON strings in .env");
     }
   } catch (err) {
     fail("Failed to create environment file", err);
@@ -110,21 +111,21 @@ function backupFile(filePath) {
   const backupPath = `${filePath}.${timestamp}.backup`;
   fs.copyFileSync(filePath, backupPath);
 
-  console.log(`✔ Backup created → ${path.basename(backupPath)}`);
+  logger.success(`✔ Backup created → ${path.basename(backupPath)}`);
 }
 
 function printSummary({ preserved, added, invalid }, hadExisting) {
-  console.log("");
+  logger.log("");
 
   if (hadExisting) {
     if (preserved.length)
-      console.log(`✔ Preserved ${preserved.length} existing values`);
+      logger.success(`✔ Preserved ${preserved.length} existing values`);
   }
 
-  if (added.length) console.log(`➕ Added ${added.length} missing variables`);
+  if (added.length) logger.log(`➕ Added ${added.length} missing variables`);
 
   if (invalid.length)
-    console.log(`⚠ ${invalid.length} variables have invalid types`);
+    logger.warn(`⚠ ${invalid.length} variables have invalid types`);
 }
 
 function serializeValue(key ,spec, useExample) {

@@ -1,11 +1,13 @@
+import { logger } from "./logger.js";
+
 export function fail(message, err) {
-  console.error(`\n✖ [envspec]: ${message}`);
+  logger.error(`\n✖ [envspec]: ${message}`);
 
   if (process.env.ENVSPEC_DEBUG) {
-    console.error(err);
+    logger.error(err);
   } else {
-    console.error(`→ ${err.message}`);
-    console.error("(Run with --debug for details)");
+    logger.error(`→ ${err.message}`);
+    logger.info("(Run with --debug for details)");
   }
 
   process.exit(1);
