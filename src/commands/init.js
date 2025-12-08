@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
-import { generateStringExample, isSafeNumber } from "../utils/helper.js";
+import { generateStringExample, inferPrimitiveArrayType, isSafeNumber } from "../utils/helper.js";
 import { fail } from "../utils/error.js";
 
 const SCHEMA_FILE = "envspec.json";
@@ -21,7 +21,9 @@ export function initCommand(options) {
       vars: {},
     };
 
-    const markRequired = options.allRequired === true;
+    const markRequired = options.fromEnv
+      ? options.allRequired !== false
+      : false;
 
     if (options.fromEnv) {
       const envPath = path.join(cwd, ".env");
@@ -75,6 +77,56 @@ function inferSchema(key, rawValue, required = false) {
       type: "number",
       example: Number(value),
     };
+  }
+
+  // ---------- JSON (object / array) ----------
+  if (
+    (value.startsWith("{") && value.endsWith("}")) ||
+    (value.startsWith("[") && value.endsWith("]"))
+  ) {
+    try {
+      const parsed = JSON.parse(value);
+
+      // ----- array -----
+      if (Array.isArray(parsed)) {
+        return {
+          ...base,
+          type: "array",
+          itemType: inferPrimitiveArrayType(parsed),
+          delimiter: ",",
+          example: parsed.slice(0, 3),
+        };
+      }
+
+      // ----- object -----
+      if (typeof parsed === "object" && parsed !== null) {
+        return {
+          ...base,
+          type: "object",
+          example: parsed,
+        };
+      }
+    } catch {
+      // fall through → treat as string
+    }
+  }
+
+  // ---------- CSV array (very conservative) ----------
+  if (value.includes(",") && !value.includes(" ")) {
+    const parts = value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+
+    if (parts.length > 1) {
+      return {
+        ...base,
+        type: "array",
+        itemType: "string",
+        delimiter: ",",
+        example: parts.slice(0, 3),
+      };
+    }
   }
 
   // ---------- string (default) ----------

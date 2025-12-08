@@ -68,6 +68,10 @@ export async function createCommand(options) {
     writeEnvFile(envPath, result);
 
     console.log("✔ .env generated safely");
+
+    if (Object.values(schemaVars).some((v) => v.type === "object")) {
+      console.log("ℹ Object values are stored as JSON strings in .env");
+    }
   } catch (err) {
     fail("Failed to create environment file", err);
   }
@@ -88,9 +92,7 @@ function mergeEnv({ schemaVars, existingEnv, useExample }) {
       output[key] = existingEnv[key];
       changes.preserved.push(key);
     } else {
-      output[key] = useExample
-        ? String(spec.example ?? "")
-        : `<${generateStringExample(key, spec.type)}>`;
+      output[key] = serializeValue(key, spec, useExample);
       changes.added.push(key);
     }
 
@@ -123,4 +125,21 @@ function printSummary({ preserved, added, invalid }, hadExisting) {
 
   if (invalid.length)
     console.log(`⚠ ${invalid.length} variables have invalid types`);
+}
+
+function serializeValue(key ,spec, useExample) {
+  if (!useExample) {
+    return `<${generateStringExample(key, spec.type)}>`;
+  }
+
+  if (spec.type === "object") {
+    return JSON.stringify(spec.example ?? {}, null, 0);
+  }
+
+  if (spec.type === "array") {
+    const arr = Array.isArray(spec.example) ? spec.example : [];
+    return JSON.stringify(arr);
+  }
+
+  return String(spec.example ?? "");
 }

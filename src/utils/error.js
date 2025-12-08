@@ -1,5 +1,5 @@
 export function fail(message, err) {
-  console.error(`\n[x][envspec]: ${message}`);
+  console.error(`\n✖ [envspec]: ${message}`);
 
   if (process.env.ENVSPEC_DEBUG) {
     console.error(err);

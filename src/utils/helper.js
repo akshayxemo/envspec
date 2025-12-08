@@ -4,11 +4,43 @@ export function generateStringExample(key, type=null) {
 }
 
 export function isValidType(value, type) {
+  if (value == null) return false;
+
+  const v = String(value).trim();
+
   switch (type) {
     case "number":
-      return !isNaN(value);
+      return Number.isFinite(Number(v));
+
     case "boolean":
-      return value === "true" || value === "false";
+      return v === "true" || v === "false";
+
+    case "array":
+      // JSON array OR CSV fallback
+      if (v.startsWith("[") && v.endsWith("]")) {
+        try {
+          const parsed = JSON.parse(v);
+          return Array.isArray(parsed);
+        } catch {
+          return false;
+        }
+      }
+      // allow CSV: a,b,c
+      return v.length > 0;
+
+    case "object":
+      if (!v.startsWith("{") || !v.endsWith("}")) return false;
+      try {
+        const parsed = JSON.parse(v);
+        return (
+          typeof parsed === "object" &&
+          parsed !== null &&
+          !Array.isArray(parsed)
+        );
+      } catch {
+        return false;
+      }
+
     case "string":
     default:
       return true;
@@ -27,4 +59,10 @@ export function isSafeNumber(value) {
   if (value.length > 9) return false;
 
   return true;
+}
+
+export function inferPrimitiveArrayType(arr) {
+  if (arr.every((v) => typeof v === "boolean")) return "boolean";
+  if (arr.every((v) => typeof v === "number")) return "number";
+  return "string";
 }
