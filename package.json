@@ -1,14 +1,7 @@
 {
   "name": "envspec",
   "version": "0.1.0",
-  "description": "It is a schema-driven environment variable workflow tool designed to prevent runtime bugs and configuration drift.",
-  "type": "module",
-  "bin": {
-    "envspec": "./bin/envspec.js"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "description": "A schema-driven CLI tool for validating, generating, and protecting environment variables to prevent runtime bugs and configuration drift.",
   "keywords": [
     "env",
     "environment",
@@ -18,8 +11,32 @@
     "configuration",
     "schema"
   ],
+  "homepage": "https://github.com/akshayxemo/envspec#readme",
+  "bugs": {
+    "url": "https://github.com/akshayxemo/envspec/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/akshayxemo/envspec"
+  },
+  "license": "MIT",
   "author": "Akshay Kumar Das",
-  "license": "ISC",
+  "type": "module",
+  "bin": {
+    "envspec": "./bin/envspec.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "commander": "^14.0.2",
     "dotenv": "^17.2.3"
