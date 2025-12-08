@@ -25,8 +25,8 @@ export function isValidType(value, type) {
           return false;
         }
       }
-      // allow CSV: a,b,c
-      return v.length > 0;
+      // allow CSV: a,b,c (must contain at least one comma)
+      return v.includes(",");
 
     case "object":
       if (!v.startsWith("{") || !v.endsWith("}")) return false;
@@ -43,6 +43,9 @@ export function isValidType(value, type) {
 
     case "string":
     default:
+      // If value is already a JS type (from parsed JSON array), check it's actually a string
+      // Otherwise, any .env value (which is always a string) is valid
+      if (typeof value !== "string") return false;
       return true;
   }
 }
@@ -65,4 +68,37 @@ export function inferPrimitiveArrayType(arr) {
   if (arr.every((v) => typeof v === "boolean")) return "boolean";
   if (arr.every((v) => typeof v === "number")) return "number";
   return "string";
+}
+
+export function detectEnvValueType(value) {
+  const v = String(value).trim();
+
+  if (v === "true" || v === "false") return "boolean";
+
+  if (!isNaN(v) && v !== "") return "number";
+
+  if (v.startsWith("[") && v.endsWith("]")) {
+    try {
+      if (Array.isArray(JSON.parse(v))) return "array";
+    } catch {}
+  }
+
+  if (v.startsWith("{") && v.endsWith("}")) {
+    try {
+      const parsed = JSON.parse(v);
+      if (typeof parsed === "object" && !Array.isArray(parsed)) return "object";
+    } catch {}
+  }
+
+  // Detect CSV arrays (must have comma and no spaces around values suggests array)
+  if (v.includes(",") && v.split(",").length > 1) {
+    return "array";
+  }
+
+  return "string";
+}
+
+export function isEnumValid(value, enumValues) {
+  if (!Array.isArray(enumValues)) return true;
+  return enumValues.includes(String(value));
 }
