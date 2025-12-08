@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
+import { generateStringExample, isSafeNumber } from "../utils/helper.js";
 
 const SCHEMA_FILE = "envspec.json";
 
@@ -9,60 +10,74 @@ export function initCommand(options){
     const schemaPath = path.join(cwd, SCHEMA_FILE);
 
     if(fs.existsSync(schemaPath)){
-        console.log("❌ envspec.json already exists");
+        console.error("[Error]: envspec.json already exists");
         return;
     }
 
     let schema = {
-        $schemaVersion: 1
+        $schemaVersion: 1,
+        vars:{}
     }
+
+    const markRequired = options.allRequired === true;
 
     if(options.fromEnv){
         const envPath = path.join(cwd, ".env");
 
         if(!fs.existsSync(envPath)){
-            console.log("❌ .env file not found");
+            console.error("[Error]: .env file not found");
             return;
         }
 
         const parsed = dotenv.config({path: envPath}).parsed;
 
         if(!parsed){
-            console.log("❌ Failed to read .env file");
+            console.error("[Error]: Failed to read .env file");
             return;
         }
 
         for(const [key, value] of Object.entries(parsed)){
             // console.log("value:", value, typeof value)
             if(value == null || value == undefined || value === "") {
-                console.log(`❌ Invalid value found in .env: ${key}`);
+                console.log(`[Error]: Invalid value found in .env: ${key}`);
                 return;
             }
-            schema[key] = inferSchema(value);
+            schema.vars[key] = inferSchema(key, value, markRequired);
         }
     }
 
 
     fs.writeFileSync(schemaPath, JSON.stringify(schema, null, 2));
-    console.log("✅ envspec initialized");
+    console.log("✔ envspec initialized");
 }
 
-function inferSchema(value) {
-  if (!isNaN(value)) {
-    return { type: "number", required: false, example: Number(value) };
-  }
+function inferSchema(key, rawValue, required = false) {
+  const base = { required };
+  const value = String(rawValue).trim();
 
-  if (value === "true" || value === "false") {
+  // ---------- boolean ----------
+  if (/^(true|false)$/i.test(value)) {
     return {
+      ...base,
       type: "boolean",
-      required: false,
-      example: value === "true",
+      example: value.toLowerCase() === "true",
     };
   }
 
+  // ---------- number (safe only) ----------
+  if (isSafeNumber(value)) {
+    return {
+      ...base,
+      type: "number",
+      example: Number(value),
+    };
+  }
+
+  // ---------- string (default) ----------
   return {
+    ...base,
     type: "string",
-    required: false,
-    example: "your_value_here",
+    example: generateStringExample(key),
+    // secret is NOT inferred automatically (user decides)
   };
 }
