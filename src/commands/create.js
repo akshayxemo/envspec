@@ -3,6 +3,7 @@ import path from "path";
 import { generateStringExample, isValidType } from "../utils/helper.js";
 import { confirm } from "../utils/prompts.js";
 import { readEnvSafe, writeEnvFile } from "../utils/readWriteEnv.js";
+import { fail } from "../utils/error.js";
 
 const SCHEMA_FILE = "envspec.json";
 
@@ -10,56 +11,66 @@ const SCHEMA_FILE = "envspec.json";
  * envspec create
  */
 export async function createCommand(options) {
-  const cwd = process.cwd();
-  const schemaPath = path.join(cwd, SCHEMA_FILE);
-  const envPath = path.join(cwd, options.output || ".env");
+  try {
+    const cwd = process.cwd();
+    const schemaPath = path.join(cwd, SCHEMA_FILE);
+    const envPath = path.join(cwd, options.output || ".env");
 
-  if (!fs.existsSync(schemaPath)) {
-    console.error("[Error]: envspec.json not found. Run `envspec init` first.");
-    return;
-  }
-
-  const schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
-
-  if (!schema?.vars || typeof schema.vars !== "object" || Array.isArray(schema.vars)) {
-    console.error("[Error]: Invalid schema structure");
-    return;
-  }
-
-  const existingEnv = readEnvSafe(envPath);
-  const schemaVars = schema.vars;
-
-  // overwrite handling (DANGEROUS)
-  if (existingEnv && options.overwrite && !options.force) {
-    const ok = await confirm(
-      "⚠ This will overwrite your existing .env file.\nA backup will be created.\nContinue?"
-    );
-    if (!ok) {
-      console.log("Aborted.");
+    if (!fs.existsSync(schemaPath)) {
+      console.error(
+        "[Error]: envspec.json not found. Run `envspec init` first."
+      );
       return;
     }
+
+    const schema = JSON.parse(fs.readFileSync(schemaPath, "utf8"));
+
+    if (
+      !schema?.vars ||
+      typeof schema.vars !== "object" ||
+      Array.isArray(schema.vars)
+    ) {
+      console.error("[Error]: Invalid schema structure");
+      return;
+    }
+
+    const existingEnv = readEnvSafe(envPath);
+    const schemaVars = schema.vars;
+
+    // overwrite handling (DANGEROUS)
+    if (existingEnv && options.overwrite && !options.force) {
+      const ok = await confirm(
+        "⚠ This will overwrite your existing .env file.\nA backup will be created.\nContinue?"
+      );
+      if (!ok) {
+        console.log("Aborted.");
+        return;
+      }
+    }
+
+    if (existingEnv && options.overwrite) {
+      backupFile(envPath);
+    }
+
+    const { result, changes } = mergeEnv({
+      schemaVars,
+      existingEnv: options.overwrite ? null : existingEnv,
+      useExample: options.example,
+    });
+
+    printSummary(changes, !!existingEnv);
+
+    if (options.dryRun) {
+      console.log("\n--dry-run enabled. No file written.");
+      return;
+    }
+
+    writeEnvFile(envPath, result);
+
+    console.log("✔ .env generated safely");
+  } catch (err) {
+    fail("Failed to create environment file", err);
   }
-
-  if (existingEnv && options.overwrite) {
-    backupFile(envPath);
-  }
-
-  const { result, changes } = mergeEnv({
-    schemaVars,
-    existingEnv: options.overwrite ? null : existingEnv,
-    useExample: options.example,
-  });
-
-  printSummary(changes, !!existingEnv);
-
-  if (options.dryRun) {
-    console.log("\n--dry-run enabled. No file written.");
-    return;
-  }
-
-  writeEnvFile(envPath, result);
-
-  console.log("✔ .env generated safely");
 }
 
 function mergeEnv({ schemaVars, existingEnv, useExample }) {
