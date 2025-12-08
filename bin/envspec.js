@@ -3,12 +3,14 @@
 import { Command } from "commander";
 import { initCommand } from "../src/commands/init.js";
 import { createCommand } from "../src/commands/create.js";
+import { protectCommmitToGitCommand } from "../src/commands/protect.js";
 
 const program = new Command();
 
 program
   .name("envspec")
-  .description("Schema-driven environment variable workflow");
+  .description("Schema-driven environment variable workflow")
+  .option("--debug", "Show full error stack traces");
 
 program
   .command("init")
@@ -27,4 +29,14 @@ program
   .option("--dry-run", "Show what would be generated without writing")
   .action(createCommand);
 
+program
+  .command("git-protect")
+  .description("Ensure env files are safely ignored by git")
+  .action(protectCommmitToGitCommand);
+
+program.hook("preAction", (thisCommand) => {
+  if (thisCommand.opts().debug) {
+    process.env.ENVSPEC_DEBUG = "1";
+  }
+});
 program.parse(process.argv);
