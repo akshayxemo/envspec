@@ -124,17 +124,17 @@ export function validateCommand(options) {
     // ---- report ----
 
     if (errors.length) {
-      logger.error("\n✖ Validation failed:\n");
+      logger.error("\n✖  Validation failed:\n");
       errors.forEach((e) => console.log(`  • ${e}`));
     }
 
     if (warnings.length) {
-      logger.warn("\n⚠ Warnings:\n");
+      logger.warn("\n⚠  Warnings:\n");
       warnings.forEach((w) => console.log(`  • ${w}`));
     }
 
     if (!errors.length && !warnings.length) {
-      logger.success("✔ Environment variables are valid");
+      logger.success("✔  Environment variables are valid");
     }
 
     console.log("");

@@ -4,6 +4,8 @@ import { Command } from "commander";
 import { initCommand } from "../src/commands/init.js";
 import { createCommand } from "../src/commands/create.js";
 import { protectCommmitToGitCommand } from "../src/commands/protect.js";
+import { validateCommand } from "../src/commands/validate.js";
+import { schemaValidateCommand } from "../src/commands/schemaValidate.js";
 
 const program = new Command();
 
@@ -33,6 +35,17 @@ program
   .command("git-protect")
   .description("Ensure env files are safely ignored by git")
   .action(protectCommmitToGitCommand);
+
+program
+  .command("validate")
+  .description("Validate .env against envspec.json")
+  .option("-f, --file <path>", "Env file to validate", ".env")
+  .action(validateCommand);
+
+program
+  .command("schema:validate")
+  .description("Validate envspec.json structure")
+  .action(schemaValidateCommand);
 
 program.hook("preAction", (thisCommand) => {
   if (thisCommand.opts().debug) {

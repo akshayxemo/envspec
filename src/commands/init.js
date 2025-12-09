@@ -52,7 +52,7 @@ export function initCommand(options) {
     }
 
     fs.writeFileSync(schemaPath, JSON.stringify(schema, null, 2));
-    logger.success("✔ envspec initialized");
+    logger.success("✔  envspec initialized");
   } catch (err) {
     fail("Failed to initialize envspec.json to the project", err);
   }

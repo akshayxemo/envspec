@@ -41,7 +41,7 @@ export async function createCommand(options) {
     // overwrite handling (DANGEROUS)
     if (existingEnv && options.overwrite && !options.force) {
       const ok = await confirm(
-        "⚠ This will overwrite your existing .env file.\nA backup will be created.\nContinue?"
+        "⚠  This will overwrite your existing .env file.\nA backup will be created.\nContinue?"
       );
       if (!ok) {
         logger.log("Aborted.");
@@ -68,7 +68,7 @@ export async function createCommand(options) {
 
     writeEnvFile(envPath, result);
 
-    logger.success("✔ .env generated safely");
+    logger.success("✔  .env generated safely");
 
     if (Object.values(schemaVars).some((v) => v.type === "object")) {
       logger.info("ℹ Object values are stored as JSON strings in .env");
@@ -111,7 +111,7 @@ function backupFile(filePath) {
   const backupPath = `${filePath}.${timestamp}.backup`;
   fs.copyFileSync(filePath, backupPath);
 
-  logger.success(`✔ Backup created → ${path.basename(backupPath)}`);
+  logger.success(`✔  Backup created → ${path.basename(backupPath)}`);
 }
 
 function printSummary({ preserved, added, invalid }, hadExisting) {
@@ -119,13 +119,13 @@ function printSummary({ preserved, added, invalid }, hadExisting) {
 
   if (hadExisting) {
     if (preserved.length)
-      logger.success(`✔ Preserved ${preserved.length} existing values`);
+      logger.success(`✔  Preserved ${preserved.length} existing values`);
   }
 
   if (added.length) logger.log(`➕ Added ${added.length} missing variables`);
 
   if (invalid.length)
-    logger.warn(`⚠ ${invalid.length} variables have invalid types`);
+    logger.warn(`⚠  ${invalid.length} variables have invalid types`);
 }
 
 function serializeValue(key ,spec, useExample) {

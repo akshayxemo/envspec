@@ -19,7 +19,7 @@ export function protectCommmitToGitCommand(options) {
 
     if (!fs.existsSync(gitignorePath)) {
       createGitignore(gitignorePath, PROTECTED_ENTRIES);
-      logger.success("✔ .gitignore created and env files protected");
+      logger.success("✔  .gitignore created and env files protected");
       return;
     }
 
@@ -27,12 +27,12 @@ export function protectCommmitToGitCommand(options) {
     const lines = content.toString().split(/\r?\n/);
 
     if (alreadyProtected(lines, PROTECTED_ENTRIES)) {
-      logger.success("✔ Environment files are already protected");
+      logger.success("✔  Environment files are already protected");
       return;
     }
 
     appendEntries(gitignorePath, content.toString(), PROTECTED_ENTRIES);
-    logger.success("✔ Environment files added to .gitignore");
+    logger.success("✔  Environment files added to .gitignore");
   } catch (err) {
     fail("Failed to protect environment files", err);
   }
