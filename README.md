@@ -46,13 +46,13 @@ envspec is intentionally simple: schemas are explicit, values stay local, and fa
 ### Global Installation (Recommended)
 
 ```bash
-npm install -g envspec
+npm install -g @devakio/envspec
 ```
 
 ### Local Installation
 
 ```bash
-npm install --save-dev envspec
+npm install --save-dev @devakio/envspec
 ```
 
 ### Requirements

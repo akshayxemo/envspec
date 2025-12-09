@@ -1,5 +1,5 @@
 {
-  "name": "envspec",
+  "name": "@devakio/envspec",
   "version": "0.1.0",
   "description": "A schema-driven CLI tool for validating, generating, and protecting environment variables to prevent runtime bugs and configuration drift.",
   "keywords": [
