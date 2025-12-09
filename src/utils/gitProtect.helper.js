@@ -6,7 +6,7 @@ export function alreadyProtected(lines, protectedEntries) {
 
 export function createGitignore(filePath, protectedEntries) {
   const content =
-    ["# Environment variables", ...protectedEntries].join("\n") + "\n";
+    ["# envspec protected files", ...protectedEntries].join("\n") + "\n";
 
   fs.writeFileSync(filePath, content);
 }
@@ -14,7 +14,9 @@ export function createGitignore(filePath, protectedEntries) {
 export function appendEntries(filePath, existingContent, protectedEntries) {
   const needsNewline = !existingContent.endsWith("\n");
 
-  const block = ["", "# Environment variables", ...protectedEntries].join("\n");
+  const block = ["", "# envspec protected files", ...protectedEntries].join(
+    "\n"
+  );
 
   fs.appendFileSync(filePath, (needsNewline ? "\n" : "") + block + "\n");
 }
