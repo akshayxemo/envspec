@@ -59,7 +59,9 @@ export function initCommand(options) {
 }
 
 function inferSchema(key, rawValue, required = false) {
-  const base = { required };
+  const base = { required ,
+    desc: generateStringExample(key)
+  };
   const value = String(rawValue).trim();
 
   // ---------- boolean ----------
@@ -67,7 +69,7 @@ function inferSchema(key, rawValue, required = false) {
     return {
       ...base,
       type: "boolean",
-      example: value.toLowerCase() === "true",
+      // example: value.toLowerCase() === "true",
     };
   }
 
@@ -76,7 +78,7 @@ function inferSchema(key, rawValue, required = false) {
     return {
       ...base,
       type: "number",
-      example: Number(value),
+      // example: Number(value),
     };
   }
 
@@ -95,7 +97,7 @@ function inferSchema(key, rawValue, required = false) {
           type: "array",
           itemType: inferPrimitiveArrayType(parsed),
           delimiter: ",",
-          example: parsed.slice(0, 3),
+          // example: parsed.slice(0, 3),
         };
       }
 
@@ -104,7 +106,7 @@ function inferSchema(key, rawValue, required = false) {
         return {
           ...base,
           type: "object",
-          example: parsed,
+          // example: parsed,
         };
       }
     } catch {
@@ -125,7 +127,7 @@ function inferSchema(key, rawValue, required = false) {
         type: "array",
         itemType: "string",
         delimiter: ",",
-        example: parts.slice(0, 3),
+        // example: parts.slice(0, 3),
       };
     }
   }
@@ -134,7 +136,8 @@ function inferSchema(key, rawValue, required = false) {
   return {
     ...base,
     type: "string",
-    example: generateStringExample(key),
+    // desc: generateStringExample(key),
+    // example: generateStringExample(key),
     // secret is NOT inferred automatically (user decides)
   };
 }
