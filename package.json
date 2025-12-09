@@ -4,12 +4,17 @@
   "description": "A schema-driven CLI tool for validating, generating, and protecting environment variables to prevent runtime bugs and configuration drift.",
   "keywords": [
     "env",
-    "environment",
     "dotenv",
-    "cli",
-    "devtool",
+    "env-schema",
+    "environment-variables",
+    "config",
     "configuration",
-    "schema"
+    "config-validation",
+    "schema",
+    "cli",
+    "devtools",
+    "devops",
+    "ci"
   ],
   "homepage": "https://github.com/akshayxemo/envspec#readme",
   "bugs": {
