@@ -1,4 +1,5 @@
 # envspec
+[![npm version](https://badge.fury.io/js/%40devakio%2Fenvspec.svg)](https://www.npmjs.com/package/@devakio/envspec)
 
 A schema-driven CLI tool for validating, generating, and protecting environment variables to prevent runtime bugs and configuration drift.
 
