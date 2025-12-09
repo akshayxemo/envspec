@@ -1,5 +1,5 @@
 # envspec
-![npm](https://img.shields.io/npm/v/@devakio/envspec)
+[![npm](https://img.shields.io/npm/v/@devakio/envspec)](https://www.npmjs.com/package/@devakio/envspec)
 
 A schema-driven CLI tool for validating, generating, and protecting environment variables to prevent runtime bugs and configuration drift.
 
