@@ -6,6 +6,8 @@ import { createCommand } from "../src/commands/create.js";
 import { protectCommmitToGitCommand } from "../src/commands/protect.js";
 import { validateCommand } from "../src/commands/validate.js";
 import { schemaValidateCommand } from "../src/commands/schemaValidate.js";
+import { statusCommand } from "../src/commands/status.js";
+import { templateCommand } from "../src/commands/template.js";
 
 const program = new Command();
 
@@ -18,6 +20,7 @@ program
   .command("init")
   .option("--from-env", "create schema from existing .env file")
   .option("--all-required", "Mark all inferred vars as required")
+  .option("-i, --interactive", "Interactive mode with guided prompts")
   .description("Initialize envspec in the project")
   .action(initCommand)
 
@@ -25,6 +28,7 @@ program
   .command("create")
   .description("Generate environment files from envspec.json")
   .option("-o, --output <file>", "Output file", ".env")
+  .option("-e, --env <environment>", "Environment (development, production, staging, etc.)")
   .option("--example", "Use example values from schema")
   .option("--overwrite", "Allow overwriting existing file")
   .option("--force", "Skip confirmation prompts")
@@ -40,12 +44,24 @@ program
   .command("validate")
   .description("Validate .env against envspec.json")
   .option("-f, --file <path>", "Env file to validate", ".env")
+  .option("-e, --env <environment>", "Environment (development, production, staging, etc.)")
   .action(validateCommand);
 
 program
   .command("schema:validate")
   .description("Validate envspec.json structure")
   .action(schemaValidateCommand);
+
+program
+  .command("status")
+  .description("Show current status of environment variables and schema")
+  .option("-e, --env <environment>", "Check specific environment")
+  .action(statusCommand);
+
+program
+  .command("template [name]")
+  .description("List available templates or apply a specific template")
+  .action(templateCommand);
 
 program.hook("preAction", (thisCommand) => {
   if (thisCommand.opts().debug) {

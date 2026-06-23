@@ -12,6 +12,10 @@ import { logger } from "../utils/logger.js";
 const GITIGNORE = ".gitignore";
 const PROTECTED_ENTRIES = [".env", ".env.local", ".env.*.backup"];
 
+/**
+ * Protects environment files from being committed to git by adding them to .gitignore
+ * @param {Object} options - Command options (currently unused)
+ */
 export function protectCommmitToGitCommand(options) {
   try {
     const cwd = process.cwd();

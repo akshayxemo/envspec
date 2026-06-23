@@ -5,17 +5,33 @@ import {
   detectEnvValueType,
   isEnumValid,
   isValidType,
+  suggestFix,
 } from "../utils/helper.js";
 import { fail } from "../utils/error.js";
 import { logger } from "../utils/logger.js";
 
 const SCHEMA_FILE = "envspec.json";
 
+/**
+ * Validates environment variables against the envspec.json schema
+ * @param {Object} options - Command options
+ * @param {string} [options.file] - Path to the environment file to validate
+ * @param {string} [options.env] - Environment name (development, production, etc.)
+ */
 export function validateCommand(options) {
   try {
     const cwd = process.cwd();
     const schemaPath = path.join(cwd, SCHEMA_FILE);
-    const envPath = path.join(cwd, options.file || ".env");
+    
+    // Determine env file based on environment or explicit file
+    let envPath;
+    if (options.file) {
+      envPath = path.join(cwd, options.file);
+    } else if (options.env) {
+      envPath = path.join(cwd, `.env.${options.env}`);
+    } else {
+      envPath = path.join(cwd, ".env");
+    }
 
     if (!fs.existsSync(schemaPath)) {
       logger.error("[Error]: envspec.json not found");
@@ -66,8 +82,9 @@ export function validateCommand(options) {
       // --- type check ---
       if (!isValidType(value, spec.type)) {
         const actualType = detectEnvValueType(value);
+        const suggestion = suggestFix(key, value, spec);
         errors.push(
-          `Invalid type for key: ${key} (expected "${spec.type}", got "${actualType}")`
+          `${key}: Expected ${spec.type}, got ${actualType}\n       ${suggestion}`
         );
         continue; // don't enum-check invalid types
       }
@@ -104,8 +121,9 @@ export function validateCommand(options) {
 
       // --- enum check (optional) ---
       if (spec.enum && !isEnumValid(value, spec.enum)) {
+        const suggestion = suggestFix(key, value, spec);
         errors.push(
-          `Invalid value for ${key} (must be one of: ${spec.enum.join(", ")})`
+          `${key}: Invalid enum value\n       ${suggestion}`
         );
       }
     }

@@ -9,13 +9,29 @@ import { logger } from "../utils/logger.js";
 const SCHEMA_FILE = "envspec.json";
 
 /**
- * envspec create
+ * Creates a .env file from the envspec.json schema with smart merging and backup capabilities
+ * @param {Object} options - Command options
+ * @param {string} [options.output] - Output file path
+ * @param {string} [options.env] - Environment name (development, production, etc.)
+ * @param {boolean} [options.example] - Whether to use example values from schema
+ * @param {boolean} [options.overwrite] - Whether to allow overwriting existing files
+ * @param {boolean} [options.force] - Whether to skip confirmation prompts
+ * @param {boolean} [options.dryRun] - Whether to preview changes without writing
  */
 export async function createCommand(options) {
   try {
     const cwd = process.cwd();
     const schemaPath = path.join(cwd, SCHEMA_FILE);
-    const envPath = path.join(cwd, options.output || ".env");
+    
+    // Determine output file based on environment or explicit output
+    let envPath;
+    if (options.output) {
+      envPath = path.join(cwd, options.output);
+    } else if (options.env) {
+      envPath = path.join(cwd, `.env.${options.env}`);
+    } else {
+      envPath = path.join(cwd, ".env");
+    }
 
     if (!fs.existsSync(schemaPath)) {
       logger.error(
@@ -78,6 +94,14 @@ export async function createCommand(options) {
   }
 }
 
+/**
+ * Merges schema variables with existing environment variables
+ * @param {Object} params - Merge parameters
+ * @param {Object} params.schemaVars - Variables from the schema
+ * @param {Object|null} params.existingEnv - Existing environment variables
+ * @param {boolean} params.useExample - Whether to use example values
+ * @returns {Object} Object containing merged result and change summary
+ */
 function mergeEnv({ schemaVars, existingEnv, useExample }) {
   const output = {};
   const changes = {
@@ -105,6 +129,10 @@ function mergeEnv({ schemaVars, existingEnv, useExample }) {
   return { result: output, changes };
 }
 
+/**
+ * Creates a timestamped backup of a file
+ * @param {string} filePath - Path to the file to backup
+ */
 function backupFile(filePath) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 
@@ -114,6 +142,14 @@ function backupFile(filePath) {
   logger.success(`✔  Backup created → ${path.basename(backupPath)}`);
 }
 
+/**
+ * Prints a summary of changes made during environment file generation
+ * @param {Object} changes - Object containing arrays of preserved, added, and invalid variables
+ * @param {Array<string>} changes.preserved - Variables that were preserved from existing file
+ * @param {Array<string>} changes.added - Variables that were added from schema
+ * @param {Array<string>} changes.invalid - Variables with invalid types
+ * @param {boolean} hadExisting - Whether an existing file was present
+ */
 function printSummary({ preserved, added, invalid }, hadExisting) {
   logger.log("");
 
@@ -128,6 +164,13 @@ function printSummary({ preserved, added, invalid }, hadExisting) {
     logger.warn(`⚠  ${invalid.length} variables have invalid types`);
 }
 
+/**
+ * Serializes a value for writing to .env file based on the variable specification
+ * @param {string} key - The environment variable name
+ * @param {Object} spec - The variable specification from schema
+ * @param {boolean} useExample - Whether to use example values or placeholders
+ * @returns {string} The serialized value ready for .env file
+ */
 function serializeValue(key ,spec, useExample) {
   if (!useExample) {
     return `<${generateStringExample(key, spec.type)}>`;

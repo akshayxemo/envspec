@@ -6,6 +6,19 @@ const REQUIRED_KEYS = {
   },
 };
 
+/**
+ * Validates a single variable specification in the envspec schema
+ * @param {string} key - The environment variable name
+ * @param {Object} spec - The variable specification object
+ * @param {string} spec.type - Variable type (string, number, boolean, array, object)
+ * @param {boolean} spec.required - Whether the variable is required
+ * @param {string} spec.desc - Description of the variable
+ * @param {any} [spec.example] - Example value for the variable
+ * @param {Array} [spec.enum] - Array of allowed values (string type only)
+ * @param {string} [spec.itemType] - Type of array items (array type only)
+ * @param {string} [spec.delimiter] - Delimiter for CSV arrays (array type only)
+ * @returns {Array<string>} Array of validation error messages
+ */
 export function validateVar(key, spec) {
   const errors = [];
   if (!spec || typeof spec !== "object") {
@@ -81,6 +94,13 @@ export function validateVar(key, spec) {
   return errors;
 }
 
+/**
+ * Checks if an example value matches the expected type in the specification
+ * @param {any} example - The example value to validate
+ * @param {Object} spec - The variable specification
+ * @param {string} spec.type - The expected type
+ * @returns {boolean} True if the example matches the expected type
+ */
 function exampleMatchesType(example, spec) {
   switch (spec.type) {
     case "string":
@@ -103,6 +123,12 @@ function exampleMatchesType(example, spec) {
   }
 }
 
+/**
+ * Checks if a JavaScript value matches the expected primitive type
+ * @param {any} value - The value to check
+ * @param {string} type - The expected type (string, number, boolean, object, array)
+ * @returns {boolean} True if the value matches the expected type
+ */
 function jsTypeMatches(value, type) {
   switch (type) {
     case "string":

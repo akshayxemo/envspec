@@ -6,6 +6,9 @@ import { logger } from "../utils/logger.js";
 
 const SCHEMA_FILE = "envspec.json";
 
+/**
+ * Validates the structure and content of the envspec.json schema file
+ */
 export function schemaValidateCommand() {
   try {
     const cwd = process.cwd();
